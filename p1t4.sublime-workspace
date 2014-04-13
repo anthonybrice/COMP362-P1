@@ -1,0 +1,593 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"pthre",
+				"pthread_mutex_lock"
+			],
+			[
+				"find",
+				"findAndSetFirstFreeEntry"
+			],
+			[
+				"free",
+				"freeSpace"
+			],
+			[
+				"BIT",
+				"BITCLEAR"
+			],
+			[
+				"data",
+				"dataIndex"
+			],
+			[
+				"fle",
+				"fileSystem"
+			],
+			[
+				"fileS",
+				"fileSystem"
+			],
+			[
+				"file",
+				"FileSystem"
+			],
+			[
+				"clos",
+				"closeGlobal"
+			],
+			[
+				"fi",
+				"fileOpenCount"
+			],
+			[
+				"pthr",
+				"pthread_mutex_unlock"
+			],
+			[
+				"fil",
+				"fileOpenCount"
+			],
+			[
+				"NULL",
+				"NULL_VALUE"
+			],
+			[
+				"new",
+				"newGlobalOpenFileData"
+			],
+			[
+				"GlobalOpenFi",
+				"GlobalOpenFileData"
+			],
+			[
+				"Glo",
+				"GlobalOpenFileData"
+			],
+			[
+				"NUL",
+				"NULL_VALUE"
+			],
+			[
+				"fie",
+				"fileSystem"
+			],
+			[
+				"num",
+				"num_chars"
+			],
+			[
+				"rand",
+				"randString"
+			],
+			[
+				"random",
+				"randomFile_str"
+			],
+			[
+				"ran",
+				"randomFile_path"
+			],
+			[
+				"dispNo",
+				"dispNoRead_path"
+			],
+			[
+				"anyFile_",
+				"anyFile_getattr"
+			],
+			[
+				"Time",
+				"TimeSearchTextField"
+			],
+			[
+				"lo",
+				"logicalIndices"
+			],
+			[
+				"media",
+				"medialData"
+			],
+			[
+				"remo",
+				"removeFromMedialData"
+			],
+			[
+				"indi",
+				"indicesInMedialData"
+			],
+			[
+				"med",
+				"medialData"
+			],
+			[
+				"point",
+				"pointsArray"
+			],
+			[
+				"poi",
+				"pointsArray"
+			],
+			[
+				"tv",
+				"tv_sec"
+			],
+			[
+				"tim",
+				"timestamp"
+			],
+			[
+				"fr",
+				"frameSize"
+			],
+			[
+				"ti",
+				"timestamp"
+			],
+			[
+				"page",
+				"pageSize"
+			],
+			[
+				"time",
+				"timestamp"
+			],
+			[
+				"re",
+				"releaseInverted"
+			],
+			[
+				"In",
+				"InvPageTable"
+			],
+			[
+				"p",
+				"pageSize"
+			],
+			[
+				"si",
+				"size"
+			],
+			[
+				"print",
+				"printTableEntries"
+			],
+			[
+				"in",
+				"invPageTable"
+			],
+			[
+				"ini",
+				"initInverted"
+			],
+			[
+				"ma",
+				"main	main()"
+			],
+			[
+				"fram",
+				"frameIndex"
+			],
+			[
+				"tabl",
+				"tableEntries"
+			],
+			[
+				"size",
+				"sizeof"
+			],
+			[
+				"table",
+				"tableEntries"
+			],
+			[
+				"init",
+				"initTableEntries"
+			],
+			[
+				"inv",
+				"invPageTable"
+			],
+			[
+				"frame",
+				"frameSize"
+			],
+			[
+				"mem",
+				"memSize"
+			],
+			[
+				"invT",
+				"invTablePage"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 61.0,
+		"selected_items":
+		[
+			[
+				"in",
+				"Package Control: Install Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"pack",
+				"Package Control: List Packages"
+			],
+			[
+				"packa",
+				"Package Control: List Packages"
+			],
+			[
+				"plugi",
+				"SublimeCodeIntel: Disable Plugin"
+			],
+			[
+				"plug",
+				"Preferences: Terminal Settings – User"
+			],
+			[
+				"mark",
+				"Markdown Preview: Github Flavored Markdown: Preview in Browser"
+			],
+			[
+				"markdown previe",
+				"Markdown Preview: Open Markdown Cheat sheet"
+			],
+			[
+				"markd",
+				"Markdown Preview: Github Flavored Markdown: Preview in Browser"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"dis",
+				"Package Control: Disable Package"
+			],
+			[
+				"rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"git ch",
+				"Git: Change Branch"
+			],
+			[
+				"git ",
+				"Git: Change Branch"
+			],
+			[
+				"git chec",
+				"Git: Checkout Current File"
+			],
+			[
+				"git cha",
+				"Git: Change Branch"
+			],
+			[
+				"git che",
+				"Git: Change Branch"
+			],
+			[
+				"git pu",
+				"Git: Push Current Branch"
+			],
+			[
+				"comm",
+				"Git: Commit"
+			],
+			[
+				"git annotat",
+				"Git: Toggle Annotations"
+			],
+			[
+				"git dif",
+				"Git: Diff All"
+			],
+			[
+				"git ann",
+				"Git: Toggle Annotations"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 633.0
+	},
+	"console":
+	{
+		"height": 153.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/Block.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/FileSystem.c",
+		"/home/anthony/Dropbox/COMP362/P1/task2/p1t2.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/FileSystem.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/GlobalOpenFileTable.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/FileSystem.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/GlobalOpenFileTable.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/MetaDataNode.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/bitops.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/newsrc/freeSpace.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/Block.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/MetaDataNode.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/freeSpace.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/p1t4.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/params.h",
+		"/home/anthony/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/Block.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/FileSystem.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/GlobalOpenFileTable.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/MetaDataNode.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/src/bitops.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/FileSystem.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/GlobalOpenFileTable.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/GlobalOpenFileTable.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/FileSystem.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/params.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/bitops.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/p1t4.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/MetaDataNode.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/Block.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/MetaDataNode.c",
+		"/home/anthony/Dropbox/COMP362/P1/task4/freeSpace.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/fuse.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/static finals.h",
+		"/home/anthony/completion....xsublime-settings",
+		"/home/anthony/.config/sublime-text-3/Packages/completion/plugin.py",
+		"/home/anthony/.config/sublime-text-3/Packages/completion/completion.sublime-settings",
+		"/home/anthony/.config/sublime-text-3/Packages/completion/jsonrpc.py",
+		"/home/anthony/Dropbox/COMP362/P1/task3/Directory.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/Directory.h",
+		"/home/anthony/Dropbox/COMP362/P1/task4/p1t3",
+		"/home/anthony/Dropbox/COMP362/P1/task4/untitled",
+		"/home/anthony/Dropbox/COMP362/P1/task3/FileSystem.h",
+		"/home/anthony/Git/klberryrun/@BlumMedialAxis/BlumMedialAxis.m",
+		"/home/anthony/Dropbox/MedialAxisResearch/Anthony Brice/@BlumMedialAxis/BlumMedialAxis.m",
+		"/home/anthony/Dropbox/COMP362/P1/task3/test.c",
+		"/home/anthony/Downloads/fuse-tutorial/src/bbfs.c",
+		"/home/anthony/Downloads/fuse-tutorial/src/fuse.h",
+		"/home/anthony/Dropbox/COMP362/P1/task2/test.c",
+		"/home/anthony/Dropbox/COMP362/P1/task2/tmp/hello",
+		"/home/anthony/.config/sublime-text-3/Packages/User/Terminal.sublime-settings",
+		"/home/anthony/myfile2.del",
+		"/home/anthony/Downloads/TableColumnAdjuster.java",
+		"/home/anthony/Dropbox/Past Semester Classes/COMP151/IDEA Spring '13/L10/SortedArrayListWithMode/src/SortedArrayListWithMode.java",
+		"/home/anthony/Dropbox/Past Semester Classes/COMP151/IDEA Spring '13/L10/PacketManager/src/Message.java",
+		"/home/anthony/Dropbox/Past Semester Classes/COMP151/IDEA Spring '13/L10/IntervalSearch/src/IntervalSearch.java",
+		"/home/anthony/Dropbox/Past Semester Classes/COMP151/IDEA Spring '13/L10/PacketManager/src/SortedListInterface.java",
+		"/home/anthony/Dropbox/Past Semester Classes/COMP151/IDEA Spring '13/L10/PacketManager/src/SortedLinkedList.java",
+		"/home/anthony/.cache/.fr-OVFeG2/Re_SCRUM_Byron-master/README.md",
+		"/home/anthony/Git/Re_Team1/SemProj/src/driver/SensorQuery.java",
+		"/home/anthony/Dropbox/COMP362/P1/task1/p1t1.c",
+		"/home/anthony/myfile.del",
+		"/home/anthony/Dropbox/COMP362/P1/task1/tmp/hello",
+		"/home/anthony/Git/klberryrun/PredictStemPear.m",
+		"/home/anthony/java.log.14220",
+		"/home/anthony/bin/matlab.sh",
+		"/home/anthony/Dropbox/Past Semester Classes/COMP151/IDEA Spring '13/L10/SortedLinkedListWithMode/src/SortedLinkedListWithMode.java",
+		"/home/anthony/private.key",
+		"/home/anthony/Downloads/testParse.java",
+		"/home/anthony/Git/Re_Team1/SemProj/src/driver/Driver.java",
+		"/home/anthony/Git/klberryrun/@BlumMedialAxis/README.md",
+		"/home/anthony/.config/sublime-text-3/Packages/User/MarkdownPreview.sublime-settings",
+		"/usr/lib/jvm/jdk1.7.0_51/jre/lib/security/java.policy",
+		"/home/anthony/Git/klberryrun/@BlumMedialAxis/README.html",
+		"/home/anthony/Git/klberryrun/@BlumMedialAxis/calculateEDF.m",
+		"/home/anthony/Git/klberryrun/branchnew.m",
+		"/home/anthony/.config/sublime-text-3/Packages/User/SideBarEnhancements/Open With/Side Bar.sublime-menu",
+		"/home/anthony/.config/sublime-text-3/Packages/User/SublimeLinter.sublime-settings",
+		"/home/anthony/Dropbox/COMP362/Lab8/task3/task3_out.txt",
+		"/home/anthony/Dropbox/COMP362/Lab8/task3/task3_script-processed.txt",
+		"/home/anthony/Dropbox/COMP362/Lab8/task2/testDyLibMain.c",
+		"/home/anthony/Dropbox/COMP362/Lab7/task1/l7t1.h",
+		"/home/anthony/.bashrc",
+		"/home/anthony/.config/fontconfig/fonts.conf",
+		"/tmp/InstallErrors-4169",
+		"/home/anthony/bin/replace-java-symlinks.sh",
+		"/home/anthony/.Xresources",
+		"/home/anthony/Dropbox/COMP362/Lab8/task1/giveMeNum.o"
+	],
+	"find":
+	{
+		"height": 38.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"PerProcessFileData",
+			"head",
+			"char",
+			"unsigned char",
+			"unsigned short",
+			"DIRECTORY",
+			"Filesystem",
+			"CLOCK_THREAD_CPU_TIME_ID"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"PerProcessOpenFileData",
+			"char",
+			"StoragePointer",
+			"FileSystem"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "/home/anthony/Dropbox/COMP362/P1"
+		}
+	],
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 37.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.clang":
+	{
+		"height": 126.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 126.0
+	},
+	"output.markdown":
+	{
+		"height": 124.0
+	},
+	"project": "",
+	"replace":
+	{
+		"height": 68.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 94.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
