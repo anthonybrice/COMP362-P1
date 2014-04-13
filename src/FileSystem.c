@@ -99,6 +99,8 @@ int findAndSetFirstFreeEntry(Byte* freeSpace) {
 		exit(-1);
 	}
 	BITCLEAR(freeSpace, i);
+
+	return i;
 }
 
 int findFirstFreeEntry(Byte* freeSpace) {
