@@ -2,11 +2,10 @@
 
 extern FileSystem* fileSystem;
 
-int checkAccessCondition(unsigned short fmode, int cond);
-int findAndSetFirstFreeEntry(Byte* freeSpace);
-int findFirstFreeEntry(Byte* freeSpace);
-MetaDataNode* findFile(const char* name, unsigned long* hashNum, StoragePointer* stIndex);
-unsigned long hash(const char *str);
+static int checkAccessCondition(unsigned short fmode, int cond);
+static int findAndSetFirstFreeEntry(Byte* freeSpace);
+static int findFirstFreeEntry(Byte* freeSpace);
+static unsigned long hash(const char *str);
 
 // char* uid = "anthony";
 // char* gid = "anthony";
@@ -16,10 +15,6 @@ FileSystem* newFileSystem() {
 	for (int i = 0; i < DIRECTORY_SIZE; i++)
 		fileSystem->directory[i] = NULL;
 
-	// int test = BITNSLOTS(BIT_VECTOR_SIZE);
-	// printf("gonna go %d\n", test);
-	// for (int i = 0; i < BIT_VECTOR_SIZE; i++)
-		// BITSET(fileSystem->freeSpace, i);
 	memset(fileSystem->freeSpace, -1, BITNSLOTS(BIT_VECTOR_SIZE));
 
 	fileSystem->goft = NULL;
@@ -42,7 +37,6 @@ int fs_create(const char* name, int mode, int uid, int gid) {
 	printf("dataBlock: %d\n", dataBlock);
 
 	fillMetaBlock(&fileSystem->storage[mdnBlock], name, uid, gid, S_IFREG | mode, dataBlock);
-	// fillMetaBlock(&fileSystem->storage[mdnBlock], name, uid, gid, S_IFREG | 0777, dataBlock);
 
 	unsigned long num = hash(name) % DIRECTORY_SIZE;
 	fileSystem->directory[num] = g_list_prepend(fileSystem->directory[num], GUINT_TO_POINTER(mdnBlock));

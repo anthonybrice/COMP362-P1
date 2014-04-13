@@ -5,7 +5,6 @@
 #include <string.h>
 #include <glib.h>
 #include <errno.h>
-// #include <fcntl.h>
 
 #include "MetaDataNode.h"
 

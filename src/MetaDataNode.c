@@ -24,13 +24,3 @@ void displayFileInfo(MetaDataNode* mdn) {
 	printf("%o %d %s %s %d %s %s\n", mdn->fileMode, mdn->linkCount, pwd->pw_name, grp->gr_name, mdn->size, buff, mdn->name);
 }
 
-#define INVALID_UID  -1
-uid_t getuid_byName(const char *name)
-{
-    if(name) {
-        struct passwd *pwd = getpwnam(name); /* don't free, see getpwnam() for details */
-        if(pwd) return pwd->pw_uid;
-    }
-  return INVALID_UID;
-}
-

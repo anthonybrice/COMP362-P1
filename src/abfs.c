@@ -19,7 +19,7 @@ static int abfs_readdir(const char* name, void* buf, fuse_fill_dir_t filler, off
 			printf("i == %d\n", i);
 			struct stat st;
 			MetaDataNode* mdn = &fileSystem->storage[GPOINTER_TO_UINT(l->data)].mdn;
-			int e = abfs_getattr(mdn->name, &st);
+			abfs_getattr(mdn->name, &st);
 			/* call to fs_access?*/
 			if (filler(buf, mdn->name + 1, &st, 0))
 				return -ENOMEM;
@@ -89,7 +89,7 @@ static struct fuse_operations abfs_oper = {
 int main(int argc, char *argv[])
 {
 	fileSystem = newFileSystem();
-	printf("size mdn: %d\n", sizeof (MetaDataNode));
+	// printf("size mdn: %lud\n", sizeof (MetaDataNode));
 
 	return fuse_main(argc, argv, &abfs_oper, NULL);
 }

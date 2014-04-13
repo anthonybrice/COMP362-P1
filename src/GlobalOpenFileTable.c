@@ -5,7 +5,7 @@ int comparePid(PerProcessOpenFileData* ppofd, int pid);
 
 GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn) {
 	GlobalOpenFileData* gofd = malloc(sizeof *gofd);
-	strcmp(gofd->name, mdn->name);
+	strcpy(gofd->name, mdn->name);
 	gofd->mdn = mdn;
 	gofd->dataLocation = mdn->dataIndex;
 	gofd->fileOpenCount = 1;
@@ -39,6 +39,8 @@ PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int
 	ppofd->pid = pid;
 	ppofd->fileMode = fileMode;
 	ppofd->position = 0;
+
+	return ppofd;
 }
 
 void* findByName(GList* goft, char* name) {
