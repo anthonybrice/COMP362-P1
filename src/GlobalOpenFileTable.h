@@ -26,9 +26,9 @@ typedef struct PerProcessOpenFileData {
 	GlobalOpenFileData* gofd;
 } PerProcessOpenFileData;
 
-PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int gid,  MetaDataNode* mdn);
+PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd);
 GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn);
-void* findByName(GList* goft, char* name);
+void* findByName(GList*, const char* name);
 void* findByPid(GList* ppoft, int pid);
 void freeGlobalOpenFileTable(GList* goft);
 

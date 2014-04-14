@@ -61,7 +61,7 @@ static int abfs_create(const char* name, mode_t mode, struct fuse_file_info* fi)
 	if (i < 0)
 		return i;
 
-	return fs_open(name, fi->flags, fc->uid, fc->gid);
+	return fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
 }
 
 static int abfs_access(const char* name, int mask) {
@@ -73,7 +73,7 @@ static int abfs_access(const char* name, int mask) {
 static int abfs_open(const char* name, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	return fs_open(name, fi->flags, fc->uid, fc->gid);
+	return fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
 }
 
 static struct fuse_operations abfs_oper = {
@@ -88,7 +88,7 @@ static struct fuse_operations abfs_oper = {
 
 int main(int argc, char *argv[])
 {
-	fileSystem = newFileSystem();
+	newFileSystem();
 	// printf("size mdn: %lud\n", sizeof (MetaDataNode));
 
 	return fuse_main(argc, argv, &abfs_oper, NULL);

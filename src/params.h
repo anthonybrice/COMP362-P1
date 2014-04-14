@@ -10,7 +10,6 @@
 typedef unsigned short StoragePointer;
 typedef unsigned char Byte;
 
-#define BIT_VECTOR_SIZE STORAGE_SIZE
 #define NULL_VALUE STORAGE_SIZE
 
 #endif

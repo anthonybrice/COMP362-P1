@@ -14,23 +14,28 @@ GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn) {
 }
 
 GlobalOpenFileData* closeGlobal(GlobalOpenFileData* gofd) {
- 	if (--gofd->fileOpenCount == 0) {
- 		free(gofd);
- 		return NULL;
- 	}
+	if (--gofd->fileOpenCount == 0) {
+		free(gofd);
+		return NULL;
+	}
 
- 	return gofd;
+	return gofd;
 }
 
-PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int gid,  MetaDataNode* mdn) {
+PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd) {
 	// make sure we have permission to open
-	Byte fileMode;
+	Byte fileMode = 0;
+
+	// get user access
 	if (mdn->uid == uid)
 		fileMode = (mdn->fileMode & 0700) >> 6;
-	else if (mdn->gid == gid)
+
+	// get group access
+	if (mdn->gid == gid)
 		fileMode = (mdn->fileMode & 0070) >> 3;
-	else
-		fileMode = (mdn->fileMode & 0007);
+
+	// get other access
+	fileMode = mdn->fileMode & 0007;
 
 	if (!fileMode)
 		return NULL;
@@ -39,11 +44,16 @@ PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int
 	ppofd->pid = pid;
 	ppofd->fileMode = fileMode;
 	ppofd->position = 0;
+	ppofd->gofd = gofd;
 
 	return ppofd;
 }
 
-void* findByName(GList* goft, char* name) {
+void* findByName(GList* goft, const char* name) {
+	int compareName(GlobalOpenFileData* gofd, const char* other) {
+		return strcmp(gofd->name, other);
+	}
+
 	GList* l = g_list_find_custom(goft, name, (void*) compareName);
 	if (!l)
 		return NULL;
@@ -51,16 +61,12 @@ void* findByName(GList* goft, char* name) {
 	return l->data;
 }
 
-void* findByPidAndName(GList* ppoft, int pid, char* name) {
+void* findByPidAndName(GList* ppoft, int pid, const char* name) {
 	for (GList* l = ppoft; l != NULL; l = l->next)
 		if (((PerProcessOpenFileData*) l->data)->pid == pid && !strcmp(((PerProcessOpenFileData*) l->data)->gofd->name, name))
 			return l->data;
 
 	return NULL;
-}
-
-int compareName(GlobalOpenFileData* gofd, char* name) {
-	return strcmp(gofd->name, name);
 }
 
 void freeGlobalOpenFileTable(GList* goft) {

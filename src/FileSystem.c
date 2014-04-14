@@ -6,6 +6,8 @@ static int checkAccessCondition(unsigned short fmode, int cond);
 static int findAndSetFirstFreeEntry(Byte* freeSpace);
 static int findFirstFreeEntry(Byte* freeSpace);
 static unsigned long hash(const char *str);
+editOpenFileTables(const char* name, int uid, int gid, int pid);
+// static PerProcessOpenFileData* findByPidAndName(int pid, const char* name);
 
 // char* uid = "anthony";
 // char* gid = "anthony";
@@ -15,15 +17,13 @@ FileSystem* newFileSystem() {
 	for (int i = 0; i < DIRECTORY_SIZE; i++)
 		fileSystem->directory[i] = NULL;
 
-	memset(fileSystem->freeSpace, -1, BITNSLOTS(BIT_VECTOR_SIZE));
+	memset(fileSystem->freeSpace, -1, BITNSLOTS(STORAGE_SIZE));
 
 	fileSystem->goft = NULL;
 
 	fileSystem->ppoft = NULL;
 
 	pthread_mutex_init(&fileSystem->mutex, NULL);
-
-	return fileSystem;
 }
 
 int fs_create(const char* name, int mode, int uid, int gid) {
@@ -47,7 +47,21 @@ int fs_create(const char* name, int mode, int uid, int gid) {
 	return 0;
 }
 
-int fs_open(const char* name, int flags, int uid, int gid) {
+static GList* searchByPid(int pid) {
+	GList* current = fileSystem->processList;
+
+	while (current) {
+		GList* head = current->data;
+		if (head->data->pid == pid)
+			return head;
+
+		current = current->next;
+	}
+
+	return NULL;
+}
+
+int fs_open(const char* name, int flags, int uid, int gid, int pid) {
 	MetaDataNode* mdn = findFile(name, NULL, NULL);
 	if (!mdn)
 		return -ENOENT;
@@ -61,8 +75,43 @@ int fs_open(const char* name, int flags, int uid, int gid) {
 	else if ((flags & O_RDWR) && (!checkAccessCondition(fmode, R_OK) || !checkAccessCondition(fmode, R_OK)))
 		return -EACCES;
 
+	editOpenFileTables(name, uid, gid, pid);
+
 	return 0;
 }
+
+static void editOpenFileTables(const char* name, int uid, int gid, int pid) {
+	pthread_mutex_lock(fileSystem->mutex);
+
+	GlobalOpenFileData* gofd = findByName(fileSystem->goft, name);
+	if (!gofd) {
+		gofd = newGlobalOpenFileData(mdn);
+		fileSystem->goft = g_list_prepend(fileSystem->goft, gofd);
+	}
+
+	PerProcessOpenFileData* ppofd;
+	GList* ppoft; // perProcessOpenFileTable
+	ppoft = searchByPid(fileSystem->processTable, pid);
+	if (!ppoft) {
+		// then this process has no other open files.
+		ppofd = newPerProcessOpenFileData(pid, uid, gid, mdn, gofd);
+		ppoft = g_list_prepend(ppoft, ppofd);
+		fileSystem->processTable = g_list_prepend(fileSystem->processTable, ppoft);
+	} else {
+		ppofd = findByName(ppoft, name);
+		if (!ppofd) {
+			// then this process does not already have the file open.
+			ppofd = newPerProcessOpenFileData(pid, uid, gid, mdn, gofd);
+			fileSystem->processTable = g_list_remove_link(fileSystem->processTable, ppoft);
+			ppoft = g_list_prepend(ppoft, ppofd);
+			fileSystem->processTable = g_list_prepend(fileSystem->processTable, ppoft);
+		} // else we do nothing. The process already has this file open once. If we add another table, how will we know which table the process requests later?
+	}
+
+	pthread_mutex_unlock(fileSystem->mutex);
+}
+
+
 
 int fs_access(const char* name, int amode, int uid, int gid) {
 	if (!strcmp(name, "/"))
@@ -86,7 +135,7 @@ int fs_access(const char* name, int amode, int uid, int gid) {
 	return 0;
 }
 
-int findAndSetFirstFreeEntry(Byte* freeSpace) {
+static int findAndSetFirstFreeEntry(Byte* freeSpace) {
 	int i = findFirstFreeEntry(freeSpace);
 	if (i < 0) {
 		fprintf(stderr, "Out of space in storage.\n");
@@ -97,8 +146,8 @@ int findAndSetFirstFreeEntry(Byte* freeSpace) {
 	return i;
 }
 
-int findFirstFreeEntry(Byte* freeSpace) {
-	for (int i = 0; i < BIT_VECTOR_SIZE; i++) {
+static int findFirstFreeEntry(Byte* freeSpace) {
+	for (int i = 0; i < STORAGE_SIZE; i++) {
 		if (BITTEST(freeSpace, i))
 			return i;
 	}
@@ -106,7 +155,7 @@ int findFirstFreeEntry(Byte* freeSpace) {
 	return -1;
 }
 
-int checkAccessCondition(unsigned short fmode, int cond) {
+static int checkAccessCondition(unsigned short fmode, int cond) {
 	return fmode & cond || fmode & (cond << 3) || fmode & (cond << 6);
 }
 
@@ -166,7 +215,7 @@ void freeFileSystem() {
 }
 
 // djb2: http://www.cse.yorku.ca/~oz/hash.html
-unsigned long hash(const char *str) {
+static unsigned long hash(const char *str) {
 	unsigned long hash = 5381;
 	int c;
 
