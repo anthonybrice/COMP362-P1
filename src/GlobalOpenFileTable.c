@@ -39,9 +39,10 @@ PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNod
 	// 	return NULL;
 
 	PerProcessOpenFileData* ppofd = malloc(sizeof *ppofd);
-	ppofd->position = 0;
+	ppofd->index = ppofd->position = 0;
 	ppofd->gofd = gofd;
 	ppofd->flags = flags;
+
 
 	return ppofd;
 }

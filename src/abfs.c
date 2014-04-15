@@ -61,10 +61,10 @@ static int abfs_create(const char* name, mode_t mode, struct fuse_file_info* fi)
 	if (i < 0)
 		return i;
 
-	int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
-	fi->fh = fd;
+	// int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
+	// fi->fh = fd;
 
-	return fd;
+	return i;
 }
 
 static int abfs_access(const char* name, int mask) {
@@ -80,6 +80,12 @@ static int abfs_open(const char* name, struct fuse_file_info* fi) {
 	fi->fh = fd;
 
 	return fd;
+}
+
+static int abfs_read(const char* name, char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
+	struct fuse_context* fc = fuse_get_context();
+
+	return fs_read(fi->fh, buf, size, fc->pid);
 }
 
 static int abfs_release(const char* name, struct fuse_file_info* fi) {

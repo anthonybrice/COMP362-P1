@@ -1,4 +1,4 @@
-COMP362-P1
+fuse-proj
 ==========
 
 FUSE Filesystem

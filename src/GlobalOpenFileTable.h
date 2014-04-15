@@ -21,7 +21,8 @@ typedef struct {
 
 typedef struct {
 	int fd; // fileDescriptor, unique id used to index the requested ppofd in its ppoft
-	StoragePointer position;
+	short index;
+	short position;
 	int flags;
 	GlobalOpenFileData* gofd;
 } PerProcessOpenFileData;
@@ -32,7 +33,7 @@ typedef struct {
 	int pid;
 } PerProcessOpenFileTable;
 
-PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd, int flags);
+PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid, GlobalOpenFileData* gofd, int flags);
 PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid);
 GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn);
 void* findByName(GList*, const char* name);

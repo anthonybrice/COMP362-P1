@@ -217,6 +217,21 @@ int fs_unlink(const char* name, int uid, int gid) {
 	return 0;
 }
 
+int fs_read(int fd, char* buf, size_t size, int pid) {
+	PerProcessOpenFileTable* ppoft = searchByPid(pid);
+	if (!ppoft)
+		return -EBADF;
+
+	PerProcessOpenFileData* ppofd = ppoft->table[fd];
+	if (!ppofd)
+		return -EBADF;
+
+	if (!(ppofd->flags & O_RDONLY || ppofd->flags & O_RDWR))
+		return -EINVAL;
+
+
+}
+
 MetaDataNode* findFile(const char* name, unsigned long* hashNum, StoragePointer* stIndex) {
 	unsigned long hashIndex = hash(name) % DIRECTORY_SIZE;
 	if (hashNum)
