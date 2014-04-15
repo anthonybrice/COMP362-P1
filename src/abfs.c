@@ -85,7 +85,7 @@ static int abfs_open(const char* name, struct fuse_file_info* fi) {
 static int abfs_release(const char* name, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	return fs_release(name, fi->fd, fc->uid, fc->gid, fc->pid);
+	return fs_release(name, fi->fh, fc->pid);
 }
 
 static struct fuse_operations abfs_oper = {

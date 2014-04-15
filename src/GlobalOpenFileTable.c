@@ -1,8 +1,5 @@
 #include "GlobalOpenFileTable.h"
 
-int compareName(GlobalOpenFileData* gofd, char* name);
-int comparePid(PerProcessOpenFileData* ppofd, int pid);
-
 GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn) {
 	GlobalOpenFileData* gofd = malloc(sizeof *gofd);
 	strcpy(gofd->name, mdn->name);
@@ -42,7 +39,6 @@ PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNod
 	// 	return NULL;
 
 	PerProcessOpenFileData* ppofd = malloc(sizeof *ppofd);
-	ppofd->pid = pid;
 	ppofd->position = 0;
 	ppofd->gofd = gofd;
 	ppofd->flags = flags;
@@ -60,14 +56,6 @@ void* findByName(GList* goft, const char* name) {
 		return NULL;
 
 	return l->data;
-}
-
-void* findByPidAndName(GList* ppoft, int pid, const char* name) {
-	for (GList* l = ppoft; l != NULL; l = l->next)
-		if (((PerProcessOpenFileData*) l->data)->pid == pid && !strcmp(((PerProcessOpenFileData*) l->data)->gofd->name, name))
-			return l->data;
-
-	return NULL;
 }
 
 PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid) {

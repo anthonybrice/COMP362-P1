@@ -4,8 +4,8 @@ static int checkAccessCondition(unsigned short fmode, int cond);
 static int findAndSetFirstFreeEntry(Byte* freeSpace);
 static int findFirstFreeEntry(Byte* freeSpace);
 static unsigned long hash(const char *str);
-static void addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int gid, int pid);
-static PerProcessOpenFileData* searchByPid(int pid);
+static int addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int gid, int pid, int flags);
+static PerProcessOpenFileTable* searchByPid(int pid);
 // static PerProcessOpenFileData* findByPidAndName(int pid, const char* name);
 
 // char* uid = "anthony";
@@ -46,11 +46,12 @@ int fs_create(const char* name, int mode, int uid, int gid) {
 	return 0;
 }
 
-static PerProcessOpenFileData* searchByPid(int pid) {
+static PerProcessOpenFileTable* searchByPid(int pid) {
 	GList* current = fileSystem->processList;
 
 	while (current) {
-		if (((PerProcessOpenFileTable*) current->data)->pid == pid)
+		PerProcessOpenFileTable* head = current->data;
+		if (head->pid == pid)
 			return head;
 
 		current = current->next;
@@ -110,7 +111,7 @@ static int addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int
 	return fd;
 }
 
-int fs_release(const char* name, int fd, int uid, int gid, int pid) {
+int fs_release(const char* name, int fd, int pid) {
 	pthread_mutex_lock(&fileSystem->mutex);
 
 	PerProcessOpenFileTable* ppoft;
@@ -135,10 +136,11 @@ int fs_release(const char* name, int fd, int uid, int gid, int pid) {
 	ppoft->table[fd] = NULL;
 	free(ppofd);
 	if (--ppoft->size == 0) {
-		fileSystem->processList = g_list_remove(fileSystem->ppoft, ppoft);
+		fileSystem->processList = g_list_remove(fileSystem->processList, ppoft);
 		free(ppoft);
 	}
 
+	pthread_mutex_unlock(&fileSystem->mutex);
 	return 0;
 }
 

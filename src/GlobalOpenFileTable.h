@@ -32,8 +32,8 @@ typedef struct {
 	int pid;
 } PerProcessOpenFileTable;
 
-PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd);
-PerProcessOpenFileData* newPerProcessOpenFileTable(int pid);
+PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd, int flags);
+PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid);
 GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn);
 void* findByName(GList*, const char* name);
 void* findByPid(GList* ppoft, int pid);
