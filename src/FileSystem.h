@@ -16,6 +16,8 @@
 #include "params.h"
 #include "bitops.h"
 
+#define MAX_SIZE STORAGE_SIZE * DATA_SIZE
+
 typedef struct {
 	GList* directory[DIRECTORY_SIZE];
 	Block storage[STORAGE_SIZE];
@@ -34,6 +36,7 @@ int fs_open(const char* name, int flags, int uid, int gid, int pid);
 int fs_access(const char* name, int amode, int uid, int gid);
 int fs_release(const char* name, int fd, int pid);
 int fs_read(int fd, char* buf, size_t size, int pid);
+int fs_write(int fd, const char* buf, size_t size, int pid);
 MetaDataNode* findFile(const char* name, unsigned long* hashNum, StoragePointer* stIndex);
 void freeFileSystem();
 

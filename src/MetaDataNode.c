@@ -21,6 +21,6 @@ void displayFileInfo(MetaDataNode* mdn) {
 	struct passwd* pwd = getpwuid(mdn->uid);
 	struct group* grp = getgrgid(mdn->gid);
 
-	printf("%o %d %s %s %d %s %s\n", mdn->fileMode, mdn->linkCount, pwd->pw_name, grp->gr_name, mdn->size, buff, mdn->name);
+	printf("%o %d %s %s %u %s %s\n", mdn->fileMode, mdn->linkCount, pwd->pw_name, grp->gr_name, (unsigned int) mdn->size, buff, mdn->name);
 }
 

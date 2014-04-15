@@ -72,8 +72,6 @@ PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid) {
 }
 
 int ppoft_findFreeEntry(PerProcessOpenFileTable* ppoft) {
-	int i = 0;
-
 	for (int i = 0; i < MAX_OPEN_FILES_PER_PROCESS; i++) {
 		if (!ppoft->table[i])
 			return i;

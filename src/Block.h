@@ -5,6 +5,8 @@
 
 #include "params.h"
 
+#define DATA_SIZE (BLOCK_SIZE - sizeof (BlockType))
+
 typedef unsigned short BlockType;
 enum BlockType { META_DATA_NODE, INDEX_NODE, DATA_NODE };
 

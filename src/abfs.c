@@ -77,21 +77,55 @@ static int abfs_open(const char* name, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
 	int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
-	fi->fh = fd;
 
-	return fd;
+	if (fd >= 0) {
+		return 0;
+	} else
+		return fd;
 }
 
 static int abfs_read(const char* name, char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	return fs_read(fi->fh, buf, size, fc->pid);
+	int fd = fs_open(name, O_RDONLY, fc->uid, fc->gid, fc->pid);
+
+	int ret;
+	if (fd >= 0)
+		ret = fs_read(fd, buf, size, fc->pid);
+	else {
+		fs_release(name, fd, fc->pid);
+		return fd;
+	}
+
+	fs_release(name, fd, fc->pid);
+
+
+	return ret;
+}
+
+static int abfs_write(const char* name, const char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
+	struct fuse_context* fc = fuse_get_context();
+
+	int fd = fs_open(name, O_WRONLY, fc->uid, fc->gid, fc->pid);
+
+	int ret;
+	if (fd >= 0)
+		ret = fs_write(fd, buf, size, fc->pid);
+	else {
+		fs_release(name, fd, fc->pid);
+		return fd;
+	}
+
+	fs_release(name, fd, fc->pid);
+
+	return ret;
 }
 
 static int abfs_release(const char* name, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	return fs_release(name, fi->fh, fc->pid);
+	// return fs_release(name, fi->fh, fc->pid);
+	return 0;
 }
 
 static struct fuse_operations abfs_oper = {
@@ -103,6 +137,8 @@ static struct fuse_operations abfs_oper = {
 	.open = abfs_open,
 	.destroy = freeFileSystem,
 	.release = abfs_release,
+	.read = abfs_read,
+	.write = abfs_write,
 };
 
 int main(int argc, char *argv[])

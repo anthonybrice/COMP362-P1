@@ -104,7 +104,7 @@ static int addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int
 		return -EMFILE;
 	}
 	ppoft->table[fd] = ppofd;
-	ppoft->size++;
+	// ppoft->size++;
 
 	pthread_mutex_unlock(&fileSystem->mutex);
 
@@ -217,7 +217,10 @@ int fs_unlink(const char* name, int uid, int gid) {
 	return 0;
 }
 
-int fs_read(int fd, char* buf, size_t size, int pid) {
+int fs_write(int fd, const char* buf, size_t size, int pid) {
+	if (!buf)
+		return -EFAULT;
+
 	PerProcessOpenFileTable* ppoft = searchByPid(pid);
 	if (!ppoft)
 		return -EBADF;
@@ -226,27 +229,102 @@ int fs_read(int fd, char* buf, size_t size, int pid) {
 	if (!ppofd)
 		return -EBADF;
 
-	if (!(ppofd->flags & O_RDONLY || ppofd->flags & O_RDWR))
-		return -EINVAL;
+	if (!(ppofd->flags & O_WRONLY || ppofd->flags & O_RDWR))
+		return -EBADF;
 
-	int numRead = size;
-	while (numRead > 0) {
+	pthread_mutex_lock(&fileSystem->mutex);
+
+	MetaDataNode* mdn = ppofd->gofd->mdn;
+	int numWrite = size;
+	while (numWrite > 0 && mdn->size < MAX_SIZE) {
 		int index = ppofd->index;
-		Block* data = &fileSystem->storage[mdn->dataIndex];
-		if (index != 0 && data->type == INDEX_NODE)
-			data = fileSystem->storage[data->indexNode[index]];
+		Block* indexNode = &fileSystem->storage[mdn->dataIndex];
+		Block* data;
+		if (indexNode->type == INDEX_NODE)
+			data = &fileSystem->storage[data->indexNode[index]];
+		else
+			data = indexNode;
 
-		int offset = ppofd->position;
-		int bytesToRead = MIN(BLOCK_SIZE - position, numRead);
+		int position = ppofd->position;
+		int bytesToWrite = MIN(DATA_SIZE - position, numWrite);
 		char* start = data->data + position;
+
+		memcpy(start, buf, bytesToWrite);
+		numWrite -= bytesToWrite;
+		ppofd->position += bytesToWrite;
+
+		if (numWrite > 0 &&  ppofd->position == DATA_SIZE) {
+			if (indexNode->type == DATA_NODE) {
+				StoragePointer i = findAndSetFirstFreeEntry(fileSystem->freeSpace);
+				Block* in = &fileSystem->storage[i];
+				in->type = INDEX_NODE;
+				in->indexNode[0] = mdn->dataIndex;
+				mdn->dataIndex = i;
+				indexNode = in;
+			}
+
+			StoragePointer j = findAndSetFirstFreeEntry(fileSystem->freeSpace);
+			indexNode->indexNode[++ppofd->index] = j;
+		}
+	}
+
+	mdn->size += size - numWrite;
+	if (mdn->size == MAX_SIZE && numWrite > 0) {
+		pthread_mutex_unlock(&fileSystem->mutex);
+		return -EFBIG;
+	}
+
+	pthread_mutex_unlock(&fileSystem->mutex);
+
+	return size - numWrite;
+}
+
+int fs_read(int fd, char* buf, size_t size, int pid) {
+	if (!buf)
+		return -EFAULT;
+
+	PerProcessOpenFileTable* ppoft = searchByPid(pid);
+	if (!ppoft)
+		return -EBADF;
+
+	PerProcessOpenFileData* ppofd = ppoft->table[fd];
+	if (!ppofd)
+		return -EBADF;
+
+	// if (!(ppofd->flags & O_RDONLY || ppofd->flags & O_RDWR))
+		// return -EBADF;
+
+	pthread_mutex_lock(&fileSystem->mutex);
+
+	MetaDataNode* mdn = ppofd->gofd->mdn;
+	int numRead = size;
+	while (numRead > 0 && ppofd->index * DATA_SIZE + ppofd->position < mdn->size) {
+		int index = ppofd->index;
+		Block* indexNode = &fileSystem->storage[mdn->dataIndex];
+		Block* data;
+		if (indexNode->type == INDEX_NODE)
+			data = &fileSystem->storage[data->indexNode[index]];
+		else
+			data = indexNode;
+
+		int position = ppofd->position;
+		int bytesToRead = MIN(DATA_SIZE - position, numRead);
+		Byte* start = data->data + position;
 
 		memcpy(buf, start, bytesToRead);
 		numRead -= bytesToRead;
+		ppofd->position += bytesToRead;
 
-		offset = offset + bytesToRead == BLOCK_SIZE ? 0 : offset + bytesToRead;
-
-		ppofd_update_position(ppofd, bytesToRead);
+		// position = position + DATA_SIZE;
+		if (numRead > 0 && indexNode->type == INDEX_NODE && position == DATA_SIZE) {
+			ppofd->index++;
+			ppofd->position = 0;
+		}
 	}
+
+	pthread_mutex_unlock(&fileSystem->mutex);
+
+	return size - numRead;
 }
 
 MetaDataNode* findFile(const char* name, unsigned long* hashNum, StoragePointer* stIndex) {
@@ -288,8 +366,8 @@ static unsigned long hash(const char *str) {
 	return hash;
 }
 
-int main(int argc, char const *argv[])
-{
-	printf("%u %u %u %u %u\n", hash("test.txt"), hash("test1.txt"), hash("fffff"), hash("asdasfsdfisalbjj"), hash("mm"));
-	return 0;
-}
+// int main(int argc, char const *argv[])
+// {
+// 	printf("%lu %lu %lu %lu %lu\n", hash("test.txt"), hash("test1.txt"), hash("fffff"), hash("asdasfsdfisalbjj"), hash("mm"));
+// 	return 0;
+// }
