@@ -229,7 +229,24 @@ int fs_read(int fd, char* buf, size_t size, int pid) {
 	if (!(ppofd->flags & O_RDONLY || ppofd->flags & O_RDWR))
 		return -EINVAL;
 
+	int numRead = size;
+	while (numRead > 0) {
+		int index = ppofd->index;
+		Block* data = &fileSystem->storage[mdn->dataIndex];
+		if (index != 0 && data->type == INDEX_NODE)
+			data = fileSystem->storage[data->indexNode[index]];
 
+		int offset = ppofd->position;
+		int bytesToRead = MIN(BLOCK_SIZE - position, numRead);
+		char* start = data->data + position;
+
+		memcpy(buf, start, bytesToRead);
+		numRead -= bytesToRead;
+
+		offset = offset + bytesToRead == BLOCK_SIZE ? 0 : offset + bytesToRead;
+
+		ppofd_update_position(ppofd, bytesToRead);
+	}
 }
 
 MetaDataNode* findFile(const char* name, unsigned long* hashNum, StoragePointer* stIndex) {
@@ -269,4 +286,10 @@ static unsigned long hash(const char *str) {
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
 	return hash;
+}
+
+int main(int argc, char const *argv[])
+{
+	printf("%u %u %u %u %u\n", hash("test.txt"), hash("test1.txt"), hash("fffff"), hash("asdasfsdfisalbjj"), hash("mm"));
+	return 0;
 }
