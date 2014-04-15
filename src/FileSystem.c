@@ -95,7 +95,7 @@ static int addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int
 		fileSystem->processList = g_list_prepend(fileSystem->processList, ppoft);
 	}
 
-	ppofd = newPerProcessOpenFileData(uid, gid, mdn, gofd, flags);
+	ppofd = newPerProcessOpenFileData(uid, gid, gofd, flags);
 	int fd = ppoft_findFreeEntry(ppoft);
 	if (fd < 0) {
 		if (--gofd->fileOpenCount == 0)

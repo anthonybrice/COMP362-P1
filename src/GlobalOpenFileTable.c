@@ -19,7 +19,7 @@ GlobalOpenFileData* closeGlobal(GlobalOpenFileData* gofd) {
 	return gofd;
 }
 
-PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd, int flags) {
+PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid, GlobalOpenFileData* gofd, int flags) {
 	// doesn't open take care of this?
 	// // make sure we have permission to open
 	// Byte fileMode = 0;
