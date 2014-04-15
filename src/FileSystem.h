@@ -27,7 +27,7 @@ typedef struct {
 
 extern FileSystem* fileSystem;
 
-FileSystem* newFileSystem();
+void newFileSystem();
 int fs_create(const char* name, int mode, int uid, int gid);
 int fs_unlink(const char* name, int uid, int gid);
 int fs_open(const char* name, int flags, int uid, int gid, int pid);

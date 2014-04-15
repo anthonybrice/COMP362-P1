@@ -1,18 +1,17 @@
 #include "FileSystem.h"
 
-extern FileSystem* fileSystem;
-
 static int checkAccessCondition(unsigned short fmode, int cond);
 static int findAndSetFirstFreeEntry(Byte* freeSpace);
 static int findFirstFreeEntry(Byte* freeSpace);
 static unsigned long hash(const char *str);
-editOpenFileTables(const char* name, int uid, int gid, int pid);
+static void addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int gid, int pid);
+static PerProcessOpenFileData* searchByPid(int pid);
 // static PerProcessOpenFileData* findByPidAndName(int pid, const char* name);
 
 // char* uid = "anthony";
 // char* gid = "anthony";
 
-FileSystem* newFileSystem() {
+void newFileSystem() {
 	fileSystem = malloc(sizeof *fileSystem);
 	for (int i = 0; i < DIRECTORY_SIZE; i++)
 		fileSystem->directory[i] = NULL;
@@ -21,7 +20,7 @@ FileSystem* newFileSystem() {
 
 	fileSystem->goft = NULL;
 
-	fileSystem->ppoft = NULL;
+	fileSystem->processList = NULL;
 
 	pthread_mutex_init(&fileSystem->mutex, NULL);
 }
@@ -33,8 +32,8 @@ int fs_create(const char* name, int mode, int uid, int gid) {
 	pthread_mutex_lock(&fileSystem->mutex);
 	int mdnBlock = findAndSetFirstFreeEntry(fileSystem->freeSpace);
 	int dataBlock = findAndSetFirstFreeEntry(fileSystem->freeSpace);
-	printf("mdnBlock: %d\n", mdnBlock);
-	printf("dataBlock: %d\n", dataBlock);
+	// printf("mdnBlock: %d\n", mdnBlock);
+	// printf("dataBlock: %d\n", dataBlock);
 
 	fillMetaBlock(&fileSystem->storage[mdnBlock], name, uid, gid, S_IFREG | mode, dataBlock);
 
@@ -47,12 +46,11 @@ int fs_create(const char* name, int mode, int uid, int gid) {
 	return 0;
 }
 
-static GList* searchByPid(int pid) {
+static PerProcessOpenFileData* searchByPid(int pid) {
 	GList* current = fileSystem->processList;
 
 	while (current) {
-		GList* head = current->data;
-		if (head->data->pid == pid)
+		if (((PerProcessOpenFileTable*) current->data)->pid == pid)
 			return head;
 
 		current = current->next;
@@ -75,43 +73,74 @@ int fs_open(const char* name, int flags, int uid, int gid, int pid) {
 	else if ((flags & O_RDWR) && (!checkAccessCondition(fmode, R_OK) || !checkAccessCondition(fmode, R_OK)))
 		return -EACCES;
 
-	editOpenFileTables(name, uid, gid, pid);
-
-	return 0;
+	return addToOpenFileTables(name, mdn, uid, gid, pid, flags);
 }
 
-static void editOpenFileTables(const char* name, int uid, int gid, int pid) {
-	pthread_mutex_lock(fileSystem->mutex);
+static int addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int gid, int pid, int flags) {
+	pthread_mutex_lock(&fileSystem->mutex);
 
 	GlobalOpenFileData* gofd = findByName(fileSystem->goft, name);
 	if (!gofd) {
 		gofd = newGlobalOpenFileData(mdn);
 		fileSystem->goft = g_list_prepend(fileSystem->goft, gofd);
-	}
+	} else
+		gofd->fileOpenCount++;
 
 	PerProcessOpenFileData* ppofd;
-	GList* ppoft; // perProcessOpenFileTable
-	ppoft = searchByPid(fileSystem->processTable, pid);
+	PerProcessOpenFileTable* ppoft;
+	ppoft = searchByPid(pid);
 	if (!ppoft) {
-		// then this process has no other open files.
-		ppofd = newPerProcessOpenFileData(pid, uid, gid, mdn, gofd);
-		ppoft = g_list_prepend(ppoft, ppofd);
-		fileSystem->processTable = g_list_prepend(fileSystem->processTable, ppoft);
-	} else {
-		ppofd = findByName(ppoft, name);
-		if (!ppofd) {
-			// then this process does not already have the file open.
-			ppofd = newPerProcessOpenFileData(pid, uid, gid, mdn, gofd);
-			fileSystem->processTable = g_list_remove_link(fileSystem->processTable, ppoft);
-			ppoft = g_list_prepend(ppoft, ppofd);
-			fileSystem->processTable = g_list_prepend(fileSystem->processTable, ppoft);
-		} // else we do nothing. The process already has this file open once. If we add another table, how will we know which table the process requests later?
+		ppoft = newPerProcessOpenFileTable(pid);
+		fileSystem->processList = g_list_prepend(fileSystem->processList, ppoft);
 	}
 
-	pthread_mutex_unlock(fileSystem->mutex);
+	ppofd = newPerProcessOpenFileData(uid, gid, mdn, gofd, flags);
+	int fd = ppoft_findFreeEntry(ppoft);
+	if (fd < 0) {
+		if (--gofd->fileOpenCount == 0)
+			fileSystem->goft = g_list_remove(fileSystem->goft, gofd);
+		pthread_mutex_unlock(&fileSystem->mutex);
+		return -EMFILE;
+	}
+	ppoft->table[fd] = ppofd;
+	ppoft->size++;
+
+	pthread_mutex_unlock(&fileSystem->mutex);
+
+	return fd;
 }
 
+int fs_release(const char* name, int fd, int uid, int gid, int pid) {
+	pthread_mutex_lock(&fileSystem->mutex);
 
+	PerProcessOpenFileTable* ppoft;
+	ppoft = searchByPid(pid);
+	if (!ppoft) {
+		pthread_mutex_unlock(&fileSystem->mutex);
+		return -EBADF;
+	}
+
+	PerProcessOpenFileData* ppofd = ppoft->table[fd];
+	if (!ppofd) {
+		pthread_mutex_unlock(&fileSystem->mutex);
+		return -EBADF;
+	}
+
+	GlobalOpenFileData* gofd = ppofd->gofd;
+	if (--gofd->fileOpenCount == 0) {
+		fileSystem->goft = g_list_remove(fileSystem->goft, gofd);
+		free(gofd);
+	}
+
+	ppoft->table[fd] = NULL;
+	free(ppofd);
+	if (--ppoft->size == 0) {
+		fileSystem->processList = g_list_remove(fileSystem->ppoft, ppoft);
+		free(ppoft);
+	}
+
+	return 0;
+}
 
 int fs_access(const char* name, int amode, int uid, int gid) {
 	if (!strcmp(name, "/"))
@@ -129,7 +158,7 @@ int fs_access(const char* name, int amode, int uid, int gid) {
 	if ((amode & W_OK) && !checkAccessCondition(fmode, W_OK))
 		return -EACCES;
 
-	if ((amode & X_OK) && !checkAccessCondition(fmode, W_OK))
+	if ((amode & X_OK) && !checkAccessCondition(fmode, X_OK))
 		return -EACCES;
 
 	return 0;
@@ -219,8 +248,8 @@ static unsigned long hash(const char *str) {
 	unsigned long hash = 5381;
 	int c;
 
-	while (c = *str++)
+	while (c = (unsigned char) *str++)
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
 	return hash;
-};
+}

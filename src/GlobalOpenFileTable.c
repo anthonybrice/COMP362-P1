@@ -22,29 +22,30 @@ GlobalOpenFileData* closeGlobal(GlobalOpenFileData* gofd) {
 	return gofd;
 }
 
-PerProcessOpenFileData* newPerProcessOpenFileData(unsigned int pid, int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd) {
-	// make sure we have permission to open
-	Byte fileMode = 0;
+PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid,  MetaDataNode* mdn, GlobalOpenFileData* gofd, int flags) {
+	// doesn't open take care of this?
+	// // make sure we have permission to open
+	// Byte fileMode = 0;
 
-	// get user access
-	if (mdn->uid == uid)
-		fileMode = (mdn->fileMode & 0700) >> 6;
+	// // get user access
+	// if (mdn->uid == uid)
+	// 	fileMode = (mdn->fileMode & 0700) >> 6;
 
-	// get group access
-	if (mdn->gid == gid)
-		fileMode = (mdn->fileMode & 0070) >> 3;
+	// // get group access
+	// if (mdn->gid == gid)
+	// 	fileMode = (mdn->fileMode & 0070) >> 3;
 
-	// get other access
-	fileMode = mdn->fileMode & 0007;
+	// // get other access
+	// fileMode = mdn->fileMode & 0007;
 
-	if (!fileMode)
-		return NULL;
+	// if (!fileMode)
+	// 	return NULL;
 
 	PerProcessOpenFileData* ppofd = malloc(sizeof *ppofd);
 	ppofd->pid = pid;
-	ppofd->fileMode = fileMode;
 	ppofd->position = 0;
 	ppofd->gofd = gofd;
+	ppofd->flags = flags;
 
 	return ppofd;
 }
@@ -67,6 +68,29 @@ void* findByPidAndName(GList* ppoft, int pid, const char* name) {
 			return l->data;
 
 	return NULL;
+}
+
+PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid) {
+	PerProcessOpenFileTable* ppoft = malloc(sizeof *ppoft);
+	ppoft->pid = pid;
+	ppoft->size = 0;
+
+	for (int i = 0; i < MAX_OPEN_FILES_PER_PROCESS; i++) {
+		ppoft->table[i] = NULL;
+	}
+
+	return ppoft;
+}
+
+int ppoft_findFreeEntry(PerProcessOpenFileTable* ppoft) {
+	int i = 0;
+
+	for (int i = 0; i < MAX_OPEN_FILES_PER_PROCESS; i++) {
+		if (!ppoft->table[i])
+			return i;
+	}
+
+	return -1;
 }
 
 void freeGlobalOpenFileTable(GList* goft) {
