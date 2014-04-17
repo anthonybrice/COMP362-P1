@@ -14,11 +14,11 @@ static int abfs_readdir(const char* name, void* buf, fuse_fill_dir_t filler, off
 	filler(buf, "..", NULL, 0);
 
 	for (int i = 0; i < DIRECTORY_SIZE; i++) {
-		GList* l = fileSystem->directory[i];
+		GList* l = fs->directory[i];
 		while (l) {
 			printf("i == %d\n", i);
 			struct stat st;
-			MetaDataNode* mdn = &fileSystem->storage[GPOINTER_TO_UINT(l->data)].mdn;
+			MetadataNode* mdn = &fs->storage[GPOINTER_TO_UINT(l->data)].mdn;
 			abfs_getattr(mdn->name, &st);
 			/* call to fs_access?*/
 			if (filler(buf, mdn->name + 1, &st, 0))
@@ -37,7 +37,7 @@ static int abfs_getattr(const char* name, struct stat* buf) {
 		buf->st_mode = S_IFDIR | 0755;
 		buf->st_nlink = 2;
 	} else {
-		MetaDataNode* mdn = findFile(name, NULL, NULL);
+		MetadataNode* mdn = find_file(name, NULL, NULL);
 		if (!mdn)
 			return -ENOENT;
 
@@ -61,9 +61,6 @@ static int abfs_create(const char* name, mode_t mode, struct fuse_file_info* fi)
 	if (i < 0)
 		return i;
 
-	// int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
-	// fi->fh = fd;
-
 	return 0;
 }
 
@@ -77,17 +74,18 @@ static int abfs_open(const char* name, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
 	int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
-
-	if (fd >= 0) {
-		return 0;
-	} else
+	if (fd < 0)
 		return fd;
+
+	fs_release(name, fd, fc->pid);
+
+	return 0;
 }
 
 static int abfs_read(const char* name, char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	int flag = O_RDONLY;
+	// int flag = O_RDONLY;
 	int fd = fs_open(name, O_RDONLY, fc->uid, fc->gid, fc->pid);
 
 	if (fd < 0) {
@@ -95,7 +93,7 @@ static int abfs_read(const char* name, char* buf, size_t size, off_t offset, str
 		return fd;
 	}
 
-	PerProcessOpenFileData* ppofd = searchByPid(fc->pid)->table[fd];
+	PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
 	ppofd_move_offset(ppofd, offset);
 
 	int ret = fs_read(fd, buf, size, fc->pid);
@@ -108,7 +106,7 @@ static int abfs_read(const char* name, char* buf, size_t size, off_t offset, str
 static int abfs_write(const char* name, const char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	int flag = O_WRONLY;
+	// int flag = O_WRONLY;
 	int fd = fs_open(name, O_WRONLY, fc->uid, fc->gid, fc->pid);
 
 	if (fd < 0) {
@@ -116,7 +114,7 @@ static int abfs_write(const char* name, const char* buf, size_t size, off_t offs
 		return fd;
 	}
 
-	PerProcessOpenFileData* ppofd = searchByPid(fc->pid)->table[fd];
+	PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
 	ppofd_move_offset(ppofd, offset);
 
 	int ret = fs_write(fd, buf, size, fc->pid);
@@ -127,9 +125,9 @@ static int abfs_write(const char* name, const char* buf, size_t size, off_t offs
 }
 
 static int abfs_release(const char* name, struct fuse_file_info* fi) {
-	struct fuse_context* fc = fuse_get_context();
+	// struct fuse_context* fc = fuse_get_context();
 
-	return fs_release(name, fi->fh, fc->pid);
+	return 0;
 }
 
 static struct fuse_operations abfs_oper = {
@@ -139,7 +137,7 @@ static struct fuse_operations abfs_oper = {
 	.access = abfs_access,
 	.unlink = abfs_unlink,
 	.open = abfs_open,
-	.destroy = freeFileSystem,
+	.destroy = freeFilesystem,
 	.release = abfs_release,
 	.read = abfs_read,
 	.write = abfs_write,
@@ -147,8 +145,8 @@ static struct fuse_operations abfs_oper = {
 
 int main(int argc, char *argv[])
 {
-	newFileSystem();
-	// printf("size mdn: %lu\n", sizeof (MetaDataNode));
+	fs_init();
+	// printf("size mdn: %lu\n", sizeof (MetadataNode));
 
 	// Block block;
 	// printf("size Block: %lu\n", sizeof block);

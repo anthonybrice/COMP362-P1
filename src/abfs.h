@@ -10,15 +10,15 @@
 #include <errno.h>
 #include <fuse.h>
 
-#include "FileSystem.h"
-#include "MetaDataNode.h"
+#include "Filesystem.h"
+#include "MetadataNode.h"
 #include "Block.h"
 #include "GlobalOpenFileTable.h"
 
 #include "params.h"
 #include "bitops.h"
 
-FileSystem* fileSystem;
+Filesystem* fs;
 
 static int abfs_unlink(const char* name);
 static int abfs_readdir(const char* name, void* buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi);

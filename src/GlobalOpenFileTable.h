@@ -6,16 +6,13 @@
 #include <glib.h>
 #include <errno.h>
 
-#include "MetaDataNode.h"
-#include "Block.h"
+#include "MetadataNode.h"
 
 #include "params.h"
 
-// enum FileMode { X = 1, W, XW, R, RX, RW, RWX};
-
 typedef struct {
 	char name[MAX_NAME];
-	MetaDataNode* mdn;
+	MetadataNode* mdn;
 	unsigned int fileOpenCount;
 } GlobalOpenFileData;
 
@@ -32,16 +29,13 @@ typedef struct {
 	int pid;
 } PerProcessOpenFileTable;
 
-PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid, GlobalOpenFileData* gofd, int flags);
-PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid);
-GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn);
-void* findByName(GList*, const char* name);
-// void* findByPid(GList* ppoft, int pid);
-void freeGlobalOpenFileTable(GList* goft);
-PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid);
-int ppoft_findFreeEntry(PerProcessOpenFileTable* ppoft);
+PerProcessOpenFileData* ppofd_init(int uid, int gid, GlobalOpenFileData* gofd, int flags);
+PerProcessOpenFileTable* ppoft_init(int pid);
+GlobalOpenFileData* gofd_init(MetadataNode* mdn);
+GlobalOpenFileData* goft_find_by_name(GList*, const char* name);
+PerProcessOpenFileTable* ppoft_init(int pid);
+int ppoft_find_free_entry(PerProcessOpenFileTable* ppoft);
 void ppofd_move_offset(PerProcessOpenFileData* ppofd, off_t offset);
-PerProcessOpenFileTable* searchByPid(int pid);
 
 
 #endif

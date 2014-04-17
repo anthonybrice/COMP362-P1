@@ -1,7 +1,7 @@
 #ifndef _BLOCK_H_
 #define _BLOCK_H_
 
-#include "MetaDataNode.h"
+#include "MetadataNode.h"
 
 #include "params.h"
 
@@ -14,11 +14,11 @@ typedef struct {
 	BlockType type;
 	union {
 		Byte data[DATA_SIZE];
-		MetaDataNode mdn;
+		MetadataNode mdn;
 		StoragePointer indexNode[DATA_SIZE / 2];
 	};
 } Block;
 
-void fillMetaBlock(Block* block, const char* name, int uid, int gid, int mode, int dataIndex);
+void block_fill_meta(Block* block, const char* name, int uid, int gid, int mode, int dataIndex);
 
 #endif
