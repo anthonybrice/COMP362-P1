@@ -4,7 +4,6 @@ GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn) {
 	GlobalOpenFileData* gofd = malloc(sizeof *gofd);
 	strcpy(gofd->name, mdn->name);
 	gofd->mdn = mdn;
-	gofd->dataLocation = mdn->dataIndex;
 	gofd->fileOpenCount = 1;
 
 	return gofd;
@@ -19,30 +18,16 @@ GlobalOpenFileData* closeGlobal(GlobalOpenFileData* gofd) {
 	return gofd;
 }
 
+void ppofd_move_offset(PerProcessOpenFileData* ppofd, off_t offset) {
+	ppofd->index = offset / DATA_SIZE;
+	ppofd->position = offset % DATA_SIZE;
+}
+
 PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid, GlobalOpenFileData* gofd, int flags) {
-	// doesn't open take care of this?
-	// // make sure we have permission to open
-	// Byte fileMode = 0;
-
-	// // get user access
-	// if (mdn->uid == uid)
-	// 	fileMode = (mdn->fileMode & 0700) >> 6;
-
-	// // get group access
-	// if (mdn->gid == gid)
-	// 	fileMode = (mdn->fileMode & 0070) >> 3;
-
-	// // get other access
-	// fileMode = mdn->fileMode & 0007;
-
-	// if (!fileMode)
-	// 	return NULL;
-
 	PerProcessOpenFileData* ppofd = malloc(sizeof *ppofd);
 	ppofd->index = ppofd->position = 0;
 	ppofd->gofd = gofd;
 	ppofd->flags = flags;
-
 
 	return ppofd;
 }

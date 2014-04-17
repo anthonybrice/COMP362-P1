@@ -5,7 +5,6 @@ static int findAndSetFirstFreeEntry(Byte* freeSpace);
 static int findFirstFreeEntry(Byte* freeSpace);
 static unsigned long hash(const char *str);
 static int addToOpenFileTables(const char* name, MetaDataNode* mdn, int uid, int gid, int pid, int flags);
-static PerProcessOpenFileTable* searchByPid(int pid);
 // static PerProcessOpenFileData* findByPidAndName(int pid, const char* name);
 
 // char* uid = "anthony";
@@ -46,7 +45,7 @@ int fs_create(const char* name, int mode, int uid, int gid) {
 	return 0;
 }
 
-static PerProcessOpenFileTable* searchByPid(int pid) {
+PerProcessOpenFileTable* searchByPid(int pid) {
 	GList* current = fileSystem->processList;
 
 	while (current) {
@@ -210,7 +209,9 @@ int fs_unlink(const char* name, int uid, int gid) {
 	BITSET(fileSystem->freeSpace, p);
 
 	fileSystem->directory[hash] = g_list_remove(fileSystem->directory[hash], GUINT_TO_POINTER(stIndex));
-	BITSET(fileSystem->freeSpace, hash);
+
+	if (!fileSystem->directory[hash])
+		BITSET(fileSystem->freeSpace, hash);
 
 	pthread_mutex_unlock(&fileSystem->mutex);
 
@@ -229,7 +230,7 @@ int fs_write(int fd, const char* buf, size_t size, int pid) {
 	if (!ppofd)
 		return -EBADF;
 
-	if (!(ppofd->flags & O_WRONLY || ppofd->flags & O_RDWR))
+	if (ppofd->flags != O_WRONLY && ppofd->flags != O_RDWR)
 		return -EBADF;
 
 	pthread_mutex_lock(&fileSystem->mutex);
@@ -241,7 +242,7 @@ int fs_write(int fd, const char* buf, size_t size, int pid) {
 		Block* indexNode = &fileSystem->storage[mdn->dataIndex];
 		Block* data;
 		if (indexNode->type == INDEX_NODE)
-			data = &fileSystem->storage[data->indexNode[index]];
+			data = &fileSystem->storage[indexNode->indexNode[index]];
 		else
 			data = indexNode;
 
@@ -249,7 +250,8 @@ int fs_write(int fd, const char* buf, size_t size, int pid) {
 		int bytesToWrite = MIN(DATA_SIZE - position, numWrite);
 		char* start = data->data + position;
 
-		memcpy(start, buf, bytesToWrite);
+		memcpy(start, buf + size - numWrite, bytesToWrite); //only ever copying start of buf
+
 		numWrite -= bytesToWrite;
 		ppofd->position += bytesToWrite;
 
@@ -265,13 +267,14 @@ int fs_write(int fd, const char* buf, size_t size, int pid) {
 
 			StoragePointer j = findAndSetFirstFreeEntry(fileSystem->freeSpace);
 			indexNode->indexNode[++ppofd->index] = j;
+			ppofd->position = 0;
 		}
-	}
 
-	mdn->size += size - numWrite;
-	if (mdn->size == MAX_SIZE && numWrite > 0) {
-		pthread_mutex_unlock(&fileSystem->mutex);
-		return -EFBIG;
+		mdn->size += bytesToWrite;
+		if (mdn->size == MAX_SIZE && numWrite > 0) {
+			pthread_mutex_unlock(&fileSystem->mutex);
+			return -EFBIG;
+		}
 	}
 
 	pthread_mutex_unlock(&fileSystem->mutex);
@@ -291,8 +294,8 @@ int fs_read(int fd, char* buf, size_t size, int pid) {
 	if (!ppofd)
 		return -EBADF;
 
-	// if (!(ppofd->flags & O_RDONLY || ppofd->flags & O_RDWR))
-		// return -EBADF;
+	if (ppofd->flags != O_RDONLY && ppofd->flags != O_RDWR)
+		return -EBADF;
 
 	pthread_mutex_lock(&fileSystem->mutex);
 
@@ -303,7 +306,7 @@ int fs_read(int fd, char* buf, size_t size, int pid) {
 		Block* indexNode = &fileSystem->storage[mdn->dataIndex];
 		Block* data;
 		if (indexNode->type == INDEX_NODE)
-			data = &fileSystem->storage[data->indexNode[index]];
+			data = &fileSystem->storage[indexNode->indexNode[index]];
 		else
 			data = indexNode;
 
@@ -311,12 +314,12 @@ int fs_read(int fd, char* buf, size_t size, int pid) {
 		int bytesToRead = MIN(DATA_SIZE - position, numRead);
 		Byte* start = data->data + position;
 
-		memcpy(buf, start, bytesToRead);
+		memcpy(buf + size - numRead, start, bytesToRead);
 		numRead -= bytesToRead;
 		ppofd->position += bytesToRead;
 
 		// position = position + DATA_SIZE;
-		if (numRead > 0 && indexNode->type == INDEX_NODE && position == DATA_SIZE) {
+		if (numRead > 0 && indexNode->type == INDEX_NODE && ppofd->position == DATA_SIZE) {
 			ppofd->index++;
 			ppofd->position = 0;
 		}

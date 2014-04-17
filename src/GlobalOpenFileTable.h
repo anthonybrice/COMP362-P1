@@ -7,20 +7,19 @@
 #include <errno.h>
 
 #include "MetaDataNode.h"
+#include "Block.h"
 
 #include "params.h"
 
-enum FileMode { X = 1, W, XW, R, RX, RW, RWX};
+// enum FileMode { X = 1, W, XW, R, RX, RW, RWX};
 
 typedef struct {
 	char name[MAX_NAME];
 	MetaDataNode* mdn;
-	StoragePointer dataLocation;
 	unsigned int fileOpenCount;
 } GlobalOpenFileData;
 
 typedef struct {
-	int fd; // fileDescriptor, unique id used to index the requested ppofd in its ppoft
 	short index;
 	short position;
 	int flags;
@@ -37,9 +36,12 @@ PerProcessOpenFileData* newPerProcessOpenFileData(int uid, int gid, GlobalOpenFi
 PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid);
 GlobalOpenFileData* newGlobalOpenFileData(MetaDataNode* mdn);
 void* findByName(GList*, const char* name);
-void* findByPid(GList* ppoft, int pid);
+// void* findByPid(GList* ppoft, int pid);
 void freeGlobalOpenFileTable(GList* goft);
 PerProcessOpenFileTable* newPerProcessOpenFileTable(int pid);
 int ppoft_findFreeEntry(PerProcessOpenFileTable* ppoft);
+void ppofd_move_offset(PerProcessOpenFileData* ppofd, off_t offset);
+PerProcessOpenFileTable* searchByPid(int pid);
+
 
 #endif

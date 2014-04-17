@@ -64,7 +64,7 @@ static int abfs_create(const char* name, mode_t mode, struct fuse_file_info* fi)
 	// int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
 	// fi->fh = fd;
 
-	return i;
+	return 0;
 }
 
 static int abfs_access(const char* name, int mask) {
@@ -87,18 +87,20 @@ static int abfs_open(const char* name, struct fuse_file_info* fi) {
 static int abfs_read(const char* name, char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
+	int flag = O_RDONLY;
 	int fd = fs_open(name, O_RDONLY, fc->uid, fc->gid, fc->pid);
 
-	int ret;
-	if (fd >= 0)
-		ret = fs_read(fd, buf, size, fc->pid);
-	else {
+	if (fd < 0) {
 		fs_release(name, fd, fc->pid);
 		return fd;
 	}
 
-	fs_release(name, fd, fc->pid);
+	PerProcessOpenFileData* ppofd = searchByPid(fc->pid)->table[fd];
+	ppofd_move_offset(ppofd, offset);
 
+	int ret = fs_read(fd, buf, size, fc->pid);
+
+	fs_release(name, fd, fc->pid);
 
 	return ret;
 }
@@ -106,15 +108,18 @@ static int abfs_read(const char* name, char* buf, size_t size, off_t offset, str
 static int abfs_write(const char* name, const char* buf, size_t size, off_t offset, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
+	int flag = O_WRONLY;
 	int fd = fs_open(name, O_WRONLY, fc->uid, fc->gid, fc->pid);
 
-	int ret;
-	if (fd >= 0)
-		ret = fs_write(fd, buf, size, fc->pid);
-	else {
+	if (fd < 0) {
 		fs_release(name, fd, fc->pid);
 		return fd;
 	}
+
+	PerProcessOpenFileData* ppofd = searchByPid(fc->pid)->table[fd];
+	ppofd_move_offset(ppofd, offset);
+
+	int ret = fs_write(fd, buf, size, fc->pid);
 
 	fs_release(name, fd, fc->pid);
 
@@ -124,8 +129,7 @@ static int abfs_write(const char* name, const char* buf, size_t size, off_t offs
 static int abfs_release(const char* name, struct fuse_file_info* fi) {
 	struct fuse_context* fc = fuse_get_context();
 
-	// return fs_release(name, fi->fh, fc->pid);
-	return 0;
+	return fs_release(name, fi->fh, fc->pid);
 }
 
 static struct fuse_operations abfs_oper = {
@@ -144,7 +148,15 @@ static struct fuse_operations abfs_oper = {
 int main(int argc, char *argv[])
 {
 	newFileSystem();
-	// printf("size mdn: %lud\n", sizeof (MetaDataNode));
+	// printf("size mdn: %lu\n", sizeof (MetaDataNode));
+
+	// Block block;
+	// printf("size Block: %lu\n", sizeof block);
+	// printf("size data: %lu\n", sizeof block.data);
+	// printf("size blocktype: %lu\n", sizeof block.type);
+
+	// Block b;
+	// printf("size indexNode: %lu\n", sizeof b.indexNode);
 
 	return fuse_main(argc, argv, &abfs_oper, NULL);
 }

@@ -5,17 +5,17 @@
 
 #include "params.h"
 
-#define DATA_SIZE (BLOCK_SIZE - sizeof (BlockType))
-
 typedef unsigned short BlockType;
 enum BlockType { META_DATA_NODE, INDEX_NODE, DATA_NODE };
+
+#define DATA_SIZE (BLOCK_SIZE - sizeof (BlockType))
 
 typedef struct {
 	BlockType type;
 	union {
-		Byte data[BLOCK_SIZE - sizeof (BlockType)];
+		Byte data[DATA_SIZE];
 		MetaDataNode mdn;
-		StoragePointer indexNode[(BLOCK_SIZE - sizeof (BlockType)) / 2];
+		StoragePointer indexNode[DATA_SIZE / 2];
 	};
 } Block;
 
