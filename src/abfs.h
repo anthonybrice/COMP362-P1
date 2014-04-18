@@ -26,6 +26,8 @@ static int abfs_getattr(const char* name, struct stat* buf);
 static int abfs_create(const char* name, mode_t mode, struct fuse_file_info* ffi);
 static int abfs_access(const char* name, int mask);
 static int abfs_open(const char* name, struct fuse_file_info* fi);
+static int abfs_utimens(const char* name, const struct timespec ts[2]);
+static int abfs_truncate(const char* name, off_t size);
 
 #endif
 

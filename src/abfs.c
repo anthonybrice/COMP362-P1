@@ -61,6 +61,13 @@ static int abfs_create(const char* name, mode_t mode, struct fuse_file_info* fi)
 	if (i < 0)
 		return i;
 
+	int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
+	if (fd < 0)
+		return fd;
+	printf("create fd: %d\ncreate pid: %d\n\n", fd, fc->pid);
+
+	fi->fh = fd;
+
 	return 0;
 }
 
@@ -76,8 +83,10 @@ static int abfs_open(const char* name, struct fuse_file_info* fi) {
 	int fd = fs_open(name, fi->flags, fc->uid, fc->gid, fc->pid);
 	if (fd < 0)
 		return fd;
+	printf("open fd: %d\nopen pid: %d\n\n", fd, fc->pid);
 
-	fs_release(name, fd, fc->pid);
+	fi->fh = fd;
+	// fs_release(name, fd, fc->pid);
 
 	return 0;
 }
@@ -86,19 +95,22 @@ static int abfs_read(const char* name, char* buf, size_t size, off_t offset, str
 	struct fuse_context* fc = fuse_get_context();
 
 	// int flag = O_RDONLY;
-	int fd = fs_open(name, O_RDONLY, fc->uid, fc->gid, fc->pid);
+	// int fd = fs_open(name, O_RDONLY, fc->uid, fc->gid, fc->pid);
 
-	if (fd < 0) {
-		fs_release(name, fd, fc->pid);
-		return fd;
-	}
+	// if (fd < 0) {
+	// 	fs_release(name, fd, fc->pid);
+	// 	return fd;
+	// }
 
-	PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
-	ppofd_move_offset(ppofd, offset);
+	// PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
+	// ppofd_move_offset(ppofd, offset);
+
+	int fd = fi->fh;
+	printf("read fd: %d\nread pid: %d\n\n", fd, fc->pid);
 
 	int ret = fs_read(fd, buf, size, fc->pid);
 
-	fs_release(name, fd, fc->pid);
+	// fs_release(name, fd, fc->pid);
 
 	return ret;
 }
@@ -107,27 +119,52 @@ static int abfs_write(const char* name, const char* buf, size_t size, off_t offs
 	struct fuse_context* fc = fuse_get_context();
 
 	// int flag = O_WRONLY;
-	int fd = fs_open(name, O_WRONLY, fc->uid, fc->gid, fc->pid);
+	// int fd = fs_open(name, O_WRONLY, fc->uid, fc->gid, fc->pid);
 
-	if (fd < 0) {
-		fs_release(name, fd, fc->pid);
-		return fd;
-	}
+	// if (fd < 0) {
+	// 	fs_release(name, fd, fc->pid);
+	// 	return fd;
+	// }
 
-	PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
-	ppofd_move_offset(ppofd, offset);
+	// PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
+	// ppofd_move_offset(ppofd, offset);
+
+	int fd = fi->fh;
+	printf("write fd: %d\nwrite pid: %d\n\n", fd, fc->pid);
 
 	int ret = fs_write(fd, buf, size, fc->pid);
 
-	fs_release(name, fd, fc->pid);
+	// fs_release(name, fd, fc->pid);
 
 	return ret;
 }
 
 static int abfs_release(const char* name, struct fuse_file_info* fi) {
-	// struct fuse_context* fc = fuse_get_context();
+	struct fuse_context* fc = fuse_get_context();
+	printf("release fd: %d\n release pid: %d\n\n", fi->fh, fc->pid);
 
-	return 0;
+	return fs_release(name, fi->fh, fc->pid);
+}
+
+static int abfs_truncate(const char* name, off_t size) {
+	return fs_truncate(name, size);
+}
+
+static int abfs_utimens(const char* name, const struct timespec ts[2]) {
+	return fs_utimens(name, ts);
+}
+
+static int abfs_chmod(const char* name, mode_t mode) {
+	struct fuse_context* fc = fuse_get_context();
+
+	return fs_chmod(name, mode, fc->uid);
+}
+
+static int abfs_flush(const char* name, struct fuse_file_info* fi) {
+	struct fuse_context* fc = fuse_get_context();
+	printf("flush fd: %d\n flush pid: %d\n\n", fi->fh, fc->pid);
+
+	return fs_release(name, fi->fh, fc->pid);
 }
 
 static struct fuse_operations abfs_oper = {
@@ -137,10 +174,14 @@ static struct fuse_operations abfs_oper = {
 	.access = abfs_access,
 	.unlink = abfs_unlink,
 	.open = abfs_open,
-	.destroy = freeFilesystem,
+	.destroy = fs_free,
 	.release = abfs_release,
 	.read = abfs_read,
 	.write = abfs_write,
+	.utimens = abfs_utimens,
+	.truncate = abfs_truncate,
+	.chmod = abfs_chmod,
+	.flush = abfs_flush,
 };
 
 int main(int argc, char *argv[])

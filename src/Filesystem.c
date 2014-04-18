@@ -5,6 +5,8 @@ static int find_and_set_block_filled();
 static int find_empty_block();
 static unsigned long hash(const char *str);
 static int file_tables_add(const char* name, MetadataNode* mdn, int uid, int gid, int pid, int flags);
+static void close_gofd(GlobalOpenFileData* gofd);
+static void close_ppoft(PerProcessOpenFileTable* ppoft);
 // static PerProcessOpenFileData* findByPidAndName(int pid, const char* name);
 
 // char* uid = "anthony";
@@ -110,14 +112,14 @@ static int file_tables_add(const char* name, MetadataNode* mdn, int uid, int gid
 	return fd;
 }
 
-static void close_ppoft(ppoft) {
+static void close_ppoft(PerProcessOpenFileTable* ppoft) {
 	if (--ppoft->size == 0) {
 		fs->processList = g_list_remove(fs->processList, ppoft);
 		free(ppoft);
 	}
 }
 
-static void close_gofd(gofd) {
+static void close_gofd(GlobalOpenFileData* gofd) {
 	if (--gofd->fileOpenCount == 0) {
 		fs->goft = g_list_remove(fs->goft, gofd);
 		free(gofd);
@@ -246,7 +248,7 @@ int fs_write(int fd, const char* buf, size_t size, int pid) {
 	if (!ppofd)
 		return -EBADF;
 
-	if (ppofd->flags != O_WRONLY && ppofd->flags != O_RDWR)
+	if ((ppofd->flags & 3) != O_WRONLY && (ppofd->flags & 3) != O_RDWR)
 		return -EBADF;
 
 	pthread_mutex_lock(&fs->mutex);
@@ -298,22 +300,46 @@ int fs_write(int fd, const char* buf, size_t size, int pid) {
 	return size - numWrite;
 }
 
+
+// this is vastly simplified from the posix requirements for utimensat. I don't check permissions, but I think FUSE handles that beforehand.
+int fs_utimens(const char* name, const struct timespec ts[2]) {
+	pthread_mutex_lock(&fs->mutex);
+	MetadataNode* mdn = find_file(name, NULL, NULL);
+	if (!mdn)
+		return -ENOENT;
+
+	if (!ts)
+		return -EACCES;
+
+	mdn->atime = ts[0].tv_sec;
+	mdn->mtime = ts[1].tv_sec;
+	pthread_mutex_unlock(&fs->mutex);
+
+	return 0;
+}
+
 int fs_read(int fd, char* buf, size_t size, int pid) {
 	if (!buf)
 		return -EFAULT;
 
+	pthread_mutex_lock(&fs->mutex);
+
 	PerProcessOpenFileTable* ppoft = fs_find_ppoft(pid);
-	if (!ppoft)
+	if (!ppoft) {
+		pthread_mutex_unlock(&fs->mutex);
 		return -EBADF;
+	}
 
 	PerProcessOpenFileData* ppofd = ppoft->table[fd];
-	if (!ppofd)
+	if (!ppofd) {
+		pthread_mutex_unlock(&fs->mutex);
 		return -EBADF;
+	}
 
-	if (ppofd->flags != O_RDONLY && ppofd->flags != O_RDWR)
+	if ((ppofd->flags & 3) != O_RDONLY && (ppofd->flags & 3) != O_RDWR) {
+		pthread_mutex_unlock(&fs->mutex);
 		return -EBADF;
-
-	pthread_mutex_lock(&fs->mutex);
+	}
 
 	MetadataNode* mdn = ppofd->gofd->mdn;
 	int numRead = size;
@@ -341,6 +367,9 @@ int fs_read(int fd, char* buf, size_t size, int pid) {
 		}
 	}
 
+	if (numRead > 0)
+		memcpy(buf + size - numRead, 0, numRead);
+
 	pthread_mutex_unlock(&fs->mutex);
 
 	return size - numRead;
@@ -366,12 +395,51 @@ MetadataNode* find_file(const char* name, unsigned long* hashNum, StoragePointer
 	return NULL;
 }
 
-void freeFilesystem() {
+int fs_chmod(const char* name, mode_t mode, int uid) {
+	pthread_mutex_lock(&fs->mutex);
+
+	MetadataNode* mdn = find_file(name, NULL, NULL);
+	if (!mdn) {
+		pthread_mutex_unlock(&fs->mutex);
+		return -ENOENT;
+	}
+
+	if (mdn->uid != uid) {
+		pthread_mutex_unlock(&fs->mutex);
+		return -EPERM;
+	}
+
+	mdn->fileMode = mode;
+	pthread_mutex_unlock(&fs->mutex);
+
+	return 0;
+}
+
+int fs_truncate(const char* name, off_t size) {
+	pthread_mutex_lock(&fs->mutex);
+
+	MetadataNode* mdn = find_file(name, NULL, NULL);
+	if (!mdn) {
+		pthread_mutex_unlock(&fs->mutex);
+		return -ENOENT;
+	}
+
+	mdn->size = size;
+	pthread_mutex_unlock(&fs->mutex);
+
+	return 0;
+}
+
+void fs_free() {
+	pthread_mutex_lock(&fs->mutex);
+
 	for (int i = 0; i < DIRECTORY_SIZE; i++) {
 		g_list_free(fs->directory[i]);
 	}
 
 	free(fs);
+
+	pthread_mutex_unlock(&fs->mutex);
 }
 
 // djb2: http://www.cse.yorku.ca/~oz/hash.html

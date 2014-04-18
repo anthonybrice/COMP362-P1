@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "MetadataNode.h"
+#include "Block.h"
 
 #include "params.h"
 
@@ -36,6 +37,7 @@ GlobalOpenFileData* goft_find_by_name(GList*, const char* name);
 PerProcessOpenFileTable* ppoft_init(int pid);
 int ppoft_find_free_entry(PerProcessOpenFileTable* ppoft);
 void ppofd_move_offset(PerProcessOpenFileData* ppofd, off_t offset);
+int ppoft_add_data(PerProcessOpenFileTable* ppoft, PerProcessOpenFileData* ppofd);
 
 
 #endif

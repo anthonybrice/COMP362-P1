@@ -38,7 +38,11 @@ int fs_release(const char* name, int fd, int pid);
 int fs_read(int fd, char* buf, size_t size, int pid);
 int fs_write(int fd, const char* buf, size_t size, int pid);
 PerProcessOpenFileTable* fs_find_ppoft(int pid);
+int fs_utimens(const char* name, const struct timespec ts[2]);
+int fs_truncate(const char* name, off_t size);
+int fs_chmod(const char* name, mode_t mode, int uid);
+
 MetadataNode* find_file(const char* name, unsigned long* hashNum, StoragePointer* stIndex);
-void freeFilesystem();
+void fs_free();
 
 #endif
