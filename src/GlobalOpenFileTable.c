@@ -1,3 +1,9 @@
+/**
+* Name: Anthony Brice
+* Lab/task: Project 1 Task 5
+* Date: 04/23/14
+**/
+
 #include "GlobalOpenFileTable.h"
 
 GlobalOpenFileData* gofd_init(MetadataNode* mdn) {

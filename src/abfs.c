@@ -1,3 +1,9 @@
+/**
+* Name: Anthony Brice
+* Lab/task: Project 1 Task 5
+* Date: 04/23/14
+**/
+
 #include "abfs.h"
 
 static int abfs_unlink(const char* name) {
@@ -102,10 +108,11 @@ static int abfs_read(const char* name, char* buf, size_t size, off_t offset, str
 	// 	return fd;
 	// }
 
-	// PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
-	// ppofd_move_offset(ppofd, offset);
-
 	int fd = fi->fh;
+
+	PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
+	ppofd_move_offset(ppofd, offset);
+
 	printf("read fd: %d\nread pid: %d\n\n", fd, fc->pid);
 
 	int ret = fs_read(fd, buf, size, fc->pid);
@@ -126,11 +133,13 @@ static int abfs_write(const char* name, const char* buf, size_t size, off_t offs
 	// 	return fd;
 	// }
 
-	// PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
-	// ppofd_move_offset(ppofd, offset);
 
 	int fd = fi->fh;
 	printf("write fd: %d\nwrite pid: %d\n\n", fd, fc->pid);
+
+	PerProcessOpenFileData* ppofd = fs_find_ppoft(fc->pid)->table[fd];
+	ppofd_move_offset(ppofd, offset);
+
 
 	int ret = fs_write(fd, buf, size, fc->pid);
 

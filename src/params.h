@@ -1,3 +1,9 @@
+/**
+* Name: Anthony Brice
+* Lab/task: Project 1 Task 5
+* Date: 04/23/14
+**/
+
 #ifndef _PARAMS_H_
 #define _PARAMS_H_
 

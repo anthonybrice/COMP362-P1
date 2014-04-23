@@ -1,3 +1,9 @@
+/**
+* Name: Anthony Brice
+* Lab/task: Project 1 Task 5
+* Date: 04/23/14
+**/
+
 #include "MetadataNode.h"
 
 void fillMetadataNode(MetadataNode* mdn, const char* name, int uid, int gid, short fileMode, int dataIndex) {
